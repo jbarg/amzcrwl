@@ -1,5 +1,21 @@
 #!/usr/bin/python2
 
+
+# Buy Phase
+# 	-> Login
+# 	-> suche
+#	-> produkt aufrufen
+#	-> warenkorb
+
+
+# Kick aus warenkorb
+#	-> Login
+#	-> warenkorb aufrufen
+#	-> ware entfernen
+
+
+
+
 user = 'user'
 password = 'password'
 
@@ -27,3 +43,8 @@ def search(query_list, sessionID):
 
 
     return html_dom
+
+
+
+
+
