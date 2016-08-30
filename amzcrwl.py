@@ -27,6 +27,8 @@ def add_to_cart(html_product, sessionID):
 	'viewID', 'rsid', 'sourceCustomerOrgListID', 'sourceCustomerOrgListItemID', 
 	'wlPopCommand', 'submit.add-to-cart', 'dropdown-selection']
 
+
+	# building POST request
 	post_data = dict()
 	soup = BeautifulSoup(html_product)
 	for input_tag in soup.findAll('input'):
@@ -88,15 +90,15 @@ def main():
 		description='Amazon Crawler')
 
 	parser.add_argument("-u", nargs=1, dest="username", type=str, action='store',
-                        help='Amazon Username')
-	parser.add_argument("-u", nargs=1, dest="password", type=str, action='store',
-                        help='Amazon Password')
-    args = parser.parse_args()
+						help='Amazon Username')
+	parser.add_argument("-p", nargs=1, dest="password", type=str, action='store',
+						help='Amazon Password')
+	args = parser.parse_args()
 
 
     # fuer den Login
-    amazon_user = args.username
-    amazon_password = args.password
+	amazon_user = args.username
+	amazon_password = args.password
 
 	html = search(query_list, 0)
 	foo = req_product_page(0, html, product_identifier)
@@ -116,5 +118,4 @@ def main():
 
 
 if __name__ == "__main__":
-
 	main()
