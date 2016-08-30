@@ -3,9 +3,6 @@ import requests
 from BeautifulSoup import BeautifulSoup
 
 
-
-
-
 user = 'user'
 password = 'password'
 
@@ -18,13 +15,10 @@ user_agent = {'User-agent': 'Mozilla/5.0'}
 def login(user, password):
 
     sessionID = ''
-
     return sessionID
 
 
 def add_to_cart(html_product, sessionID):
-
-
 
 	# all POST params needed
 	# please don't ask me what all of this shit is
@@ -34,9 +28,7 @@ def add_to_cart(html_product, sessionID):
 	'viewID', 'rsid', 'sourceCustomerOrgListID', 'sourceCustomerOrgListItemID', 
 	'wlPopCommand', 'submit.add-to-cart', 'dropdown-selection']
 
-
 	post_data = dict()
-
 	soup = BeautifulSoup(html_product)
 	for input_tag in soup.findAll('input'):
 		name =  input_tag.get('name')
@@ -47,7 +39,6 @@ def add_to_cart(html_product, sessionID):
 	r = requests.post("https://amazon.de//gp/product/handle-buy-box/ref=dp_start-bbf_1_glance", data=post_data)
 
 	return 
-
 
 
 def search(query_list, sessionID):
@@ -78,35 +69,24 @@ def req_product_page(sessionID, html_dom, product_identifier):
 				#user_agent = {'User-agent': 'Mozilla/5.0'}
 				r = requests.get(ref, headers=user_agent)
 				return r.text
-		
 
-	
-	return 'ERROR NOT FOUND'
+	return 
 
 def get_cart_page(sessionID):
 
-
 	html_dom = ''
-
 	return html_dom
 
 def delete_from_cart(prudctID, sessionID):
-
 
 	foo = ''
 	return foo
 
 
-
 def main():
 
-
-
-
 	html = search(query_list, 0)
-
 	foo = req_product_page(0, html, product_identifier)
-	
 	add_to_cart(foo, 0)
 
 	# Buy Phase
