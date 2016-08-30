@@ -1,16 +1,15 @@
 #!/usr/bin/python2
 import requests
+import argparse
 from BeautifulSoup import BeautifulSoup
-
-
-user = 'user'
-password = 'password'
 
 
 query_list = ['rotes', 'gummiboot']
 product_identifier = 'Kinderboot-Speedway-Friends'
 
 user_agent = {'User-agent': 'Mozilla/5.0'}
+
+
 
 def login(user, password):
 
@@ -84,6 +83,20 @@ def delete_from_cart(prudctID, sessionID):
 
 
 def main():
+
+	parser = argparse.ArgumentParser(
+		description='Amazon Crawler')
+
+	parser.add_argument("-u", nargs=1, dest="username", type=str, action='store',
+                        help='Amazon Username')
+	parser.add_argument("-u", nargs=1, dest="password", type=str, action='store',
+                        help='Amazon Password')
+    args = parser.parse_args()
+
+
+    # fuer den Login
+    amazon_user = args.username
+    amazon_password = args.password
 
 	html = search(query_list, 0)
 	foo = req_product_page(0, html, product_identifier)
