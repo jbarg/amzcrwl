@@ -64,7 +64,7 @@ def login(user, password):
 		print secondRequest.cookies
 		print thirdRequest.cookies
 		print fourthRequest.cookies
-		print fithRequest.text
+		print fithRequest.cookies
 		print fithRequest.status_code
 		return amazon_session.cookies
 
