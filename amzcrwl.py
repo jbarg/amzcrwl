@@ -1,13 +1,15 @@
 #!/usr/bin/python2
 import requests
 import argparse
+import time
+from random import randint
 from BeautifulSoup import BeautifulSoup
 
 
 query_list = ['rotes', 'gummiboot']
 product_identifier = 'Kinderboot-Speedway-Friends'
 
-user_agent = {'Mozilla/5.0 (X11; Linux x86_64; rv:47.0) Gecko/20100101 Firefox/47.0'}
+user_agent = {'User-agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:47.0) Gecko/20100101 Firefox/47.0'}
 
 
 
@@ -57,13 +59,13 @@ def login(user, password):
 		time.sleep(randint(0,10))
 		fithRequest = amazon_session.post('https://www.amazon.de/ap/signin', headers=user_agent, data=post_data)
 
-		#print post_data			
-		#print initialRequest.cookies
-		#print secondRequest.cookies
-		#print thirdRequest.cookies
-		#print fourthRequest.cookies
-		#print fithRequest.text
-		#print fithRequest.status_code
+		print post_data			
+		print initialRequest.cookies
+		print secondRequest.cookies
+		print thirdRequest.cookies
+		print fourthRequest.cookies
+		print fithRequest.text
+		print fithRequest.status_code
 		return amazon_session.cookies
 
 
@@ -153,7 +155,7 @@ def main():
 	html = search(query_list, 0)
 	foo = req_product_page(0, html, product_identifier)
 	add_to_cart(foo, 0)
-
+	login(amazon_user[0], amazon_password[0])
 	# Buy Phase
 	# 	-> Login
 	# 	-> suche
