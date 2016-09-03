@@ -57,7 +57,7 @@ def login(user, password):
 			newURL = 'https://www.amazon.de/ap/signin/' + session_id
 			fithRequest = amazon_session.post(newURL, headers=user_agent, data=post_data)
 
-			#print amazon_session.cookies
+			#print fithRequest.text.encode('utf-8').strip()
 			return amazon_session.cookies
 
 
@@ -117,10 +117,20 @@ def req_product_page(sessionID, html_dom, product_identifier):
 
 	return 
 
-def get_cart_page(sessionID):
+def get_cart_page(cookieJar):
+	with requests.Session() as loggedInSession:
+		user_agent.update({'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+		'Accept-Language': 'en-US,en;q=0.5',
+		'Accept-Encoding': 'gzip, deflate, br',
+		'Connection': 'close',
+		'Content-Type': 'application/x-www-form-urlencoded',
+		'Referer': 'https://www.amazon.de/gp/yourstore/home?ie=UTF8&action=sign-out&path=/gp/yourstore/home&ref_=gno_signout&signIn=1&useRedirectOnSuccess=1&'
+		})
+		shoppingCard = loggedInSession.get('http://www.amazon.de/gp/cart/view.html/ref=nav_cart', headers=user_agent, cookies=cookieJar)
+		print(shoppingCard.text).encode('utf-8').strip()
 
-	html_dom = ''
-	return html_dom
+		html_dom = ''
+		return html_dom
 
 def delete_from_cart(prudctID, sessionID):
 
@@ -147,7 +157,8 @@ def main():
 	html = search(query_list, 0)
 	foo = req_product_page(0, html, product_identifier)
 	add_to_cart(foo, 0)
-	login(amazon_user[0], amazon_password[0])
+	loggedInSession = login(amazon_user[0], amazon_password[0])
+	get_cart_page(loggedInSession)
 	# Buy Phase
 	# 	-> Login
 	# 	-> suche
