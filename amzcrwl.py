@@ -8,6 +8,9 @@ from BeautifulSoup import BeautifulSoup
 
 query_list = ['rotes', 'gummiboot']
 product_identifier = 'Kinderboot-Speedway-Friends'
+time_to_wait_hours = 6
+
+
 
 user_agent = {'User-agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:47.0) Gecko/20100101 Firefox/47.0'}
 
@@ -21,11 +24,7 @@ def login(user, password):
 		firstRequest='https://www.amazon.de/ap/signin?_encoding=UTF8&openid.assoc_handle=deflex&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select&openid.identity=http://specs.openid.net/auth/2.0/identifier_select&openid.mode=checkid_setup&openid.ns=http://specs.openid.net/auth/2.0&openid.ns.pape=http://specs.openid.net/extensions/pape/1.0&openid.pape.max_auth_age=0&openid.return_to=https://www.amazon.de/gp/yourstore/home?ie=UTF8&action=sign-out&path=%2Fgp%2Fyourstore%2Fhome&ref_=gno_signout&signIn=1&useRedirectOnSuccess=1'
 		fourthRequest = amazon_session.get(firstRequest, headers=user_agent)
 
-		# NOW COMES THE ACTUAL LOGIN. WE HAVE TO READ OUT SOME OPENID-STUFF FROM THE PREVIOUS RESPONSE BECAUSE YES
-		# LOT OF SEEMINGLY STATIC STUFF IN THIS POST, THE NECESSARY DATA IS BEING UPDATED. USING JONS GREAT UPDATESHIT
-
 		postdata_elements=['appActionToken', 'appAction', 'openid.pape.max_auth_age', 'openid.return_to', 'prevRID', 'openid.identity', 'openid.assoc_handle', 'openid.mode', 'openid.ns.pape', 'openid.claimed_id', 'pageId', 'openid.ns', 'email', 'create', 'password', 'metadata1']
-
 		post_data = dict()
 
 		soup = BeautifulSoup(fourthRequest.text)
@@ -41,7 +40,7 @@ def login(user, password):
 		post_data.update({'password':password.decode('utf-8')})
 		post_data.update({'create':'0'.decode('utf-8')})
 
-		#AAAAAND FIRE LOGIN REQUEST, BUT UPDATE ALL HEADER FIRST, IS IMPORTANT
+		#FIRE LOGIN REQUEST, BUT UPDATE ALL HEADER FIRST, IS IMPORTANT
 		user_agent.update({'Referer': 'https://www.amazon.de/ap/signin?_encoding=UTF8&openid.assoc_handle=deflex&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select&openid.identity=http://specs.openid.net/auth/2.0/identifier_select&openid.mode=checkid_setup&openid.ns=http://specs.openid.net/auth/2.0&openid.ns.pape=http://specs.openid.net/extensions/pape/1.0&openid.pape.max_auth_age=0&openid.return_to=https://www.amazon.de/gp/yourstore/home?ie=UTF8&action=sign-out&path=%2Fgp%2Fyourstore%2Fhome&ref_=gno_signout&signIn=1&useRedirectOnSuccess=1'.decode('utf-8')})
 		user_agent.update({'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 		'Accept-Language': 'en-US,en;q=0.5',
@@ -57,7 +56,6 @@ def login(user, password):
 			newURL = 'https://www.amazon.de/ap/signin/' + session_id
 			fithRequest = amazon_session.post(newURL, headers=user_agent, data=post_data)
 
-			#print fithRequest.text.encode('utf-8').strip()
 			return amazon_session.cookies
 
 
@@ -67,10 +65,10 @@ def add_to_cart(html_product, cookieJar):
 		amazon_session.cookies = cookieJar
 		# all POST params needed
 		# please don't ask me what all of this shit is
-		post_data_names = ['session-id', 'ASIN', 'offerListingID', 
-		'isMerchantExclusive', 'merchantID', 'isAddon', 'nodeID', 
-		'sellingCustomerID', 'qid', 'sr', 'storeID', 'tagActionCode', 
-		'viewID', 'rsid', 'sourceCustomerOrgListID', 'sourceCustomerOrgListItemID', 
+		post_data_names = ['session-id', 'ASIN', 'offerListingID',
+		'isMerchantExclusive', 'merchantID', 'isAddon', 'nodeID',
+		'sellingCustomerID', 'qid', 'sr', 'storeID', 'tagActionCode',
+		'viewID', 'rsid', 'sourceCustomerOrgListID', 'sourceCustomerOrgListItemID',
 		'wlPopCommand', 'submit.add-to-cart', 'dropdown-selection', 'quantity']
 
 
@@ -178,8 +176,11 @@ def main():
     # fuer den Login
 	amazon_user = args.username
 	amazon_password = args.password
+	if amazon_user is None or amazon_password is None:
+		print 'ERROR: please enter user and password'
 
 
+	print "[+] Logging in"
 	loggedInSession = login(amazon_user[0], amazon_password[0])
 	user_agent.update({'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 	'Accept-Language': 'en-US,en;q=0.5',
@@ -187,10 +188,18 @@ def main():
 	'Connection': 'close',
 	'Content-Type': 'application/x-www-form-urlencoded',
 	})
+	print "[+] searching for item"
 	html, loggedInSession = search(query_list, loggedInSession)
-	foo, loggedInSession = req_product_page(loggedInSession, html, product_identifier)
-	loggedInSession = add_to_cart(foo, loggedInSession)
+	print "[+] getting product page"
+	procuct_page, loggedInSession = req_product_page(loggedInSession, html, product_identifier)
+	print "[+] item into cart"
+	loggedInSession = add_to_cart(procuct_page, loggedInSession)
+
+	time.sleep(time_to_wait_hours * 60 * 60)
+
+	print "[+] logging in again"
 	html, loggedInSession = get_cart_page(loggedInSession)
+	print "[+] delete items from cart"
 	delete_from_cart(html, loggedInSession)
 	# Buy Phase
 	# 	-> Login
