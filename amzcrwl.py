@@ -159,9 +159,8 @@ def delete_from_cart(html, cookieJar):
 						if name is not None:
 							if any(name in input_tag.get('name') for name in post_data_names):
 								post_data.update({input_tag.get('name'):input_tag.get('value')})
-					r = amazon_session.post("https://www.amazon.de//gp/cart/view.html/ref=nav_cart", headers=user_agent, data=post_data)
-					print post_data
-					return
+					r = amazon_session.post("https://www.amazon.de/gp/cart/view.html/ref=nav_cart", headers=user_agent, data=post_data)
+		return
 
 
 def main():
@@ -190,7 +189,8 @@ def main():
 	})
 	html, loggedInSession = search(query_list, loggedInSession)
 	foo, loggedInSession = req_product_page(loggedInSession, html, product_identifier)
-	loggedInSession = add_to_cart(foo, loggedInSession)
+	#loggedInSession = add_to_cart(foo, loggedInSession)
+	#html, loggedInSession = get_cart_page(loggedInSession)
 	html, loggedInSession = get_cart_page(loggedInSession)
 	delete_from_cart(html, loggedInSession)
 	# Buy Phase
