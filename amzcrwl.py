@@ -73,15 +73,6 @@ def add_to_cart(html_product, cookieJar):
 		'viewID', 'rsid', 'sourceCustomerOrgListID', 'sourceCustomerOrgListItemID', 
 		'wlPopCommand', 'submit.add-to-cart', 'dropdown-selection', 'quantity']
 
-
-
-		user_agent.update({'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-		'Accept-Language': 'en-US,en;q=0.5',
-		'Accept-Encoding': 'gzip, deflate, br',
-		'Connection': 'close',
-		'Content-Type': 'application/x-www-form-urlencoded',
-		})
-
 		
 		# building POST request
 		post_data = dict()
@@ -93,9 +84,9 @@ def add_to_cart(html_product, cookieJar):
 					post_data.update({input_tag.get('name'):input_tag.get('value')})
 		post_data.update({'submit.add-to-cart': 'In den Einkaufswagen'.decode('utf-8')})
 		post_data.update({'quantity': '1'.decode('utf-8')})
-		#print post_data
-		r = amazon_session.post("https://amazon.de/gp/product/handle-buy-box/ref=dp_start-bbf_1_glance", headers=user_agent, data=post_data)
-		print r.text.encode('utf-8').strip()
+		print post_data
+		r = amazon_session.post("https://www.amazon.de/gp/product/handle-buy-box/ref=dp_start-bbf_1_glance ", headers=user_agent, data=post_data)
+		#print r.text.encode('utf-8').strip()
 		return amazon_session.cookies
 
 
