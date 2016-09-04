@@ -8,6 +8,8 @@ from BeautifulSoup import BeautifulSoup
 
 query_list = ['rotes', 'gummiboot']
 product_identifier = 'Kinderboot-Speedway-Friends'
+product_quantity = 10
+
 time_to_wait_hours = 6
 
 
@@ -103,7 +105,7 @@ def search(query_list, cookieJar):
 def req_product_page(cookieJar, html_dom, product_identifier):
 
 	with requests.Session() as amazon_session:
-		print '[!] putting item into cart: ' + product_identifier
+		print '[!] calling product page of: ' + product_identifier
 
 		amazon_session.cookies = cookieJar
 		#get product url
@@ -161,6 +163,8 @@ def delete_from_cart(html, cookieJar):
 		return
 
 
+
+
 def main():
 
 	parser = argparse.ArgumentParser(
@@ -185,7 +189,7 @@ def main():
 	try:
 		while True:
 
-			print "[+] Logging in"
+			print "\n\n[+] Logging in"
 			loggedInSession = login(amazon_user[0], amazon_password[0])
 			user_agent.update({'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 			'Accept-Language': 'en-US,en;q=0.5',
@@ -197,8 +201,11 @@ def main():
 			html, loggedInSession = search(query_list, loggedInSession)
 			print "[+] getting product page"
 			procuct_page, loggedInSession = req_product_page(loggedInSession, html, product_identifier)
-			print "[+] item into cart"
-			loggedInSession = add_to_cart(procuct_page, loggedInSession)
+
+			print "[+] item into cart. Quantity: " + str(product_quantity)
+			print "[!] this may take some time"
+			for qnt in xrange( 0, product_quantity):
+				loggedInSession = add_to_cart(procuct_page, loggedInSession)
 
 			#time.sleep(time_to_wait_hours * 60 * 60)
 			time.sleep(30)
