@@ -103,7 +103,7 @@ def search(query_list, cookieJar):
 def req_product_page(cookieJar, html_dom, product_identifier):
 
 	with requests.Session() as amazon_session:
-		print product_identifier
+		print '[!] putting item into cart: ' + product_identifier
 
 		amazon_session.cookies = cookieJar
 		#get product url
@@ -180,27 +180,38 @@ def main():
 		print 'ERROR: please enter user and password'
 
 
-	print "[+] Logging in"
-	loggedInSession = login(amazon_user[0], amazon_password[0])
-	user_agent.update({'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-	'Accept-Language': 'en-US,en;q=0.5',
-	'Accept-Encoding': 'gzip, deflate, br',
-	'Connection': 'close',
-	'Content-Type': 'application/x-www-form-urlencoded',
-	})
-	print "[+] searching for item"
-	html, loggedInSession = search(query_list, loggedInSession)
-	print "[+] getting product page"
-	procuct_page, loggedInSession = req_product_page(loggedInSession, html, product_identifier)
-	print "[+] item into cart"
-	loggedInSession = add_to_cart(procuct_page, loggedInSession)
 
-	time.sleep(time_to_wait_hours * 60 * 60)
 
-	print "[+] logging in again"
-	html, loggedInSession = get_cart_page(loggedInSession)
-	print "[+] delete items from cart"
-	delete_from_cart(html, loggedInSession)
+	try:
+		while True:
+
+			print "[+] Logging in"
+			loggedInSession = login(amazon_user[0], amazon_password[0])
+			user_agent.update({'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+			'Accept-Language': 'en-US,en;q=0.5',
+			'Accept-Encoding': 'gzip, deflate, br',
+			'Connection': 'close',
+			'Content-Type': 'application/x-www-form-urlencoded',
+			})
+			print "[+] searching for item"
+			html, loggedInSession = search(query_list, loggedInSession)
+			print "[+] getting product page"
+			procuct_page, loggedInSession = req_product_page(loggedInSession, html, product_identifier)
+			print "[+] item into cart"
+			loggedInSession = add_to_cart(procuct_page, loggedInSession)
+
+			#time.sleep(time_to_wait_hours * 60 * 60)
+			time.sleep(30)
+			print "[+] logging in again"
+			html, loggedInSession = get_cart_page(loggedInSession)
+			print "[+] delete items from cart"
+			delete_from_cart(html, loggedInSession)
+
+	except KeyboardInterrupt:
+		print 'interrupted!'
+		print 'quitting amzcrwl'
+
+
 	# Buy Phase
 	# 	-> Login
 	# 	-> suche
