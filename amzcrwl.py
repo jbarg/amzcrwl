@@ -160,6 +160,7 @@ def delete_from_cart(html, cookieJar):
 							if any(name in input_tag.get('name') for name in post_data_names):
 								post_data.update({input_tag.get('name'):input_tag.get('value')})
 					r = amazon_session.post("https://www.amazon.de//gp/cart/view.html/ref=nav_cart", headers=user_agent, data=post_data)
+					print post_data
 					return
 
 
