@@ -61,78 +61,89 @@ def login(user, password):
 			return amazon_session.cookies
 
 
-def add_to_cart(html_product, sessionID):
+def add_to_cart(html_product, cookieJar):
 
-	# all POST params needed
-	# please don't ask me what all of this shit is
-	post_data_names = ['session-id', 'ASIN', 'offerListingID', 
-	'isMerchantExclusive', 'merchantID', 'isAddon', 'nodeID', 
-	'sellingCustomerID', 'qid', 'sr', 'storeID', 'tagActionCode', 
-	'viewID', 'rsid', 'sourceCustomerOrgListID', 'sourceCustomerOrgListItemID', 
-	'wlPopCommand', 'submit.add-to-cart', 'dropdown-selection']
-
-
-	# building POST request
-	post_data = dict()
-	soup = BeautifulSoup(html_product)
-	for input_tag in soup.findAll('input'):
-		name =  input_tag.get('name')
-		if name is not None:
-			if any(name in input_tag.get('name') for name in post_data_names):
-				post_data.update({input_tag.get('name'):input_tag.get('value')})
-	
-	r = requests.post("https://amazon.de//gp/product/handle-buy-box/ref=dp_start-bbf_1_glance", data=post_data)
-
-	return 
+	with requests.Session() as amazon_session:
+		amazon_session.cookies = cookieJar
+		# all POST params needed
+		# please don't ask me what all of this shit is
+		post_data_names = ['session-id', 'ASIN', 'offerListingID', 
+		'isMerchantExclusive', 'merchantID', 'isAddon', 'nodeID', 
+		'sellingCustomerID', 'qid', 'sr', 'storeID', 'tagActionCode', 
+		'viewID', 'rsid', 'sourceCustomerOrgListID', 'sourceCustomerOrgListItemID', 
+		'wlPopCommand', 'submit.add-to-cart', 'dropdown-selection', 'quantity']
 
 
-def search(query_list, sessionID):
 
-    html_dom = ''
-
-    search_url = "https://www.amazon.de/s/ref=nb_sb_noss?url=search-alias%3Daps&field-keywords="
-    for word in query_list:
-    	search_url += word + '+'
-    r = requests.get(search_url, headers=user_agent)
-
-    return r.text
-
-
-def req_product_page(sessionID, html_dom, product_identifier):
-
-	print product_identifier
-
-	#get product url
-	link_list = []
-	soup = BeautifulSoup(html_dom)
-	for link in soup.findAll('a'):
-		ref = link.get('href')
-		if ref is not None:
-			if product_identifier in ref:
-
-				#request product page
-				#user_agent = {'User-agent': 'Mozilla/5.0'}
-				r = requests.get(ref, headers=user_agent)
-				return r.text
-
-	return 
-
-def get_cart_page(cookieJar):
-	with requests.Session() as loggedInSession:
 		user_agent.update({'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 		'Accept-Language': 'en-US,en;q=0.5',
 		'Accept-Encoding': 'gzip, deflate, br',
 		'Connection': 'close',
 		'Content-Type': 'application/x-www-form-urlencoded',
-		'Referer': 'https://www.amazon.de/gp/yourstore/home?ie=UTF8&action=sign-out&path=/gp/yourstore/home&ref_=gno_signout&signIn=1&useRedirectOnSuccess=1&'
 		})
+
+		
+		# building POST request
+		post_data = dict()
+		soup = BeautifulSoup(html_product)
+		for input_tag in soup.findAll('input'):
+			name =  input_tag.get('name')
+			if name is not None:
+				if any(name in input_tag.get('name') for name in post_data_names):
+					post_data.update({input_tag.get('name'):input_tag.get('value')})
+		post_data.update({'submit.add-to-cart': 'In den Einkaufswagen'.decode('utf-8')})
+		post_data.update({'quantity': '1'.decode('utf-8')})
+		#print post_data
+		r = amazon_session.post("https://amazon.de/gp/product/handle-buy-box/ref=dp_start-bbf_1_glance", headers=user_agent, data=post_data)
+		print r.text.encode('utf-8').strip()
+		return amazon_session.cookies
+
+
+def search(query_list, cookieJar):
+
+	with requests.Session() as amazon_session:
+
+	    html_dom = ''
+	    amazon_session.cookies = cookieJar
+	    search_url = "https://www.amazon.de/s/ref=nb_sb_noss?url=search-alias%3Daps&field-keywords="
+	    for word in query_list:
+	    	search_url += word + '+'
+	    r = amazon_session.get(search_url, headers=user_agent)
+	    return r.text, amazon_session.cookies
+
+
+def req_product_page(cookieJar, html_dom, product_identifier):
+
+	with requests.Session() as amazon_session:
+		print product_identifier
+
+		amazon_session.cookies = cookieJar
+		#get product url
+		link_list = []
+		soup = BeautifulSoup(html_dom)
+		for link in soup.findAll('a'):
+			ref = link.get('href')
+			if ref is not None:
+				if product_identifier in ref:
+
+					#request product page
+					#user_agent = {'User-agent': 'Mozilla/5.0'}
+					r = amazon_session.get(ref, headers=user_agent)
+					return r.text, amazon_session.cookies
+		return 
+
+def get_cart_page(cookieJar):
+	# Allright, lets just login with our existing session. Dont know yet whether Session() re-uses my existing TCP-Session (i think it shouldn right know, since its a new object), but doesnt seem to be an issue right now (maybe when it comes to all kind of defense mechanisms of amazon, such as captachs and all...)
+	with requests.Session() as loggedInSession:
+		
 		shoppingCard = loggedInSession.get('http://www.amazon.de/gp/cart/view.html/ref=nav_cart', headers=user_agent, cookies=cookieJar)
-		print(shoppingCard.text).encode('utf-8').strip()
+		
+		# Debugging-Output
+		#print(shoppingCard.text).encode('utf-8').strip()
 
-		html_dom = ''
-		return html_dom
+		return shoppingCard.text
 
-def delete_from_cart(prudctID, sessionID):
+def delete_from_cart(prudctID, cookieJar):
 
 	foo = ''
 	return foo
@@ -154,10 +165,17 @@ def main():
 	amazon_user = args.username
 	amazon_password = args.password
 
-	html = search(query_list, 0)
-	foo = req_product_page(0, html, product_identifier)
-	add_to_cart(foo, 0)
+
 	loggedInSession = login(amazon_user[0], amazon_password[0])
+	user_agent.update({'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+	'Accept-Language': 'en-US,en;q=0.5',
+	'Accept-Encoding': 'gzip, deflate, br',
+	'Connection': 'close',
+	'Content-Type': 'application/x-www-form-urlencoded',
+	})
+	html, loggedInSession = search(query_list, loggedInSession)
+	foo, loggedInSession = req_product_page(loggedInSession, html, product_identifier)
+	loggedInSession = add_to_cart(foo, loggedInSession)
 	get_cart_page(loggedInSession)
 	# Buy Phase
 	# 	-> Login
