@@ -25,18 +25,18 @@ def login(user, password):
 		# LOT OF SEEMINGLY STATIC STUFF IN THIS POST, THE NECESSARY DATA IS BEING UPDATED. USING JONS GREAT UPDATESHIT
 
 		postdata_elements=['appActionToken', 'appAction', 'openid.pape.max_auth_age', 'openid.return_to', 'prevRID', 'openid.identity', 'openid.assoc_handle', 'openid.mode', 'openid.ns.pape', 'openid.claimed_id', 'pageId', 'openid.ns', 'email', 'create', 'password', 'metadata1']
-		
+
 		post_data = dict()
-		
+
 		soup = BeautifulSoup(fourthRequest.text)
 		for input_tag in soup.findAll('input'):
 			name =  input_tag.get('name')
 			if name is not None:
 				if any(name in input_tag.get('name') for name in postdata_elements):
 					post_data.update({input_tag.get('name'):input_tag.get('value')})
-		
+
 		# update email, password, create and metadata1 seperatly. Found way to do it without metadata. Just use the backwards compatible login for people without JavaScript.
-		
+
 		post_data.update({'email': user.decode('utf-8')})
 		post_data.update({'password':password.decode('utf-8')})
 		post_data.update({'create':'0'.decode('utf-8')})
@@ -73,7 +73,7 @@ def add_to_cart(html_product, cookieJar):
 		'viewID', 'rsid', 'sourceCustomerOrgListID', 'sourceCustomerOrgListItemID', 
 		'wlPopCommand', 'submit.add-to-cart', 'dropdown-selection', 'quantity']
 
-		
+
 		# building POST request
 		post_data = dict()
 		soup = BeautifulSoup(html_product)
@@ -120,14 +120,14 @@ def req_product_page(cookieJar, html_dom, product_identifier):
 					#user_agent = {'User-agent': 'Mozilla/5.0'}
 					r = amazon_session.get(ref, headers=user_agent)
 					return r.text, amazon_session.cookies
-		return 
+		return
 
 def get_cart_page(cookieJar):
 	# Allright, lets just login with our existing session. Dont know yet whether Session() re-uses my existing TCP-Session (i think it shouldn right know, since its a new object), but doesnt seem to be an issue right now (maybe when it comes to all kind of defense mechanisms of amazon, such as captachs and all...)
 	with requests.Session() as loggedInSession:
-		
+
 		shoppingCard = loggedInSession.get('http://www.amazon.de/gp/cart/view.html/ref=nav_cart', headers=user_agent, cookies=cookieJar)
-		
+
 		# Debugging-Output
 		#print(shoppingCard.text).encode('utf-8').strip()
 
@@ -147,7 +147,7 @@ def delete_from_cart(html, cookieJar):
 			if name is not None:
 				if "submit.delete." in name:
 					# quantity und quantity.VALUE on 100 by default
-					# 
+
 					post_data = dict()
 					quantityName = "quantity." + input_tag.get('name')[14:]
 					post_data.update({input_tag.get('name'):input_tag.get('value')})
