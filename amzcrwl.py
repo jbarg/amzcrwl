@@ -84,7 +84,6 @@ def add_to_cart(html_product, cookieJar):
 					post_data.update({input_tag.get('name'):input_tag.get('value')})
 		post_data.update({'submit.add-to-cart': 'In den Einkaufswagen'.decode('utf-8')})
 		post_data.update({'quantity': '1'.decode('utf-8')})
-		print post_data
 		r = amazon_session.post("https://www.amazon.de/gp/product/handle-buy-box/ref=dp_start-bbf_1_glance ", headers=user_agent, data=post_data)
 		#print r.text.encode('utf-8').strip()
 		return amazon_session.cookies
@@ -132,12 +131,36 @@ def get_cart_page(cookieJar):
 		# Debugging-Output
 		#print(shoppingCard.text).encode('utf-8').strip()
 
-		return shoppingCard.text
+		return shoppingCard.text, loggedInSession.cookies
 
-def delete_from_cart(prudctID, cookieJar):
+def delete_from_cart(html, cookieJar):
+	# Simply deletes entire content of shopping cart
+	with requests.Session() as amazon_session:
 
-	foo = ''
-	return foo
+		amazon_session.cookies = cookieJar
+		post_data_names = ['fromAUI', 'timeStamp', 'token', 'requestID', 'activePage']
+
+		# search for every submit.delete.* input element and fire a request for it
+		soup = BeautifulSoup(html)
+		for input_tag in soup.findAll('input'):
+			name =  input_tag.get('name')
+			if name is not None:
+				if "submit.delete." in name:
+					# quantity und quantity.VALUE on 100 by default
+					# 
+					post_data = dict()
+					quantityName = "quantity." + input_tag.get('name')[14:]
+					post_data.update({input_tag.get('name'):input_tag.get('value')})
+					post_data.update({quantityName:'1'.decode('utf-8')})
+					post_data.update({"quantity":'1'.decode('utf-8')})
+					soup = BeautifulSoup(html)
+					for input_tag in soup.findAll('input'):
+						name =  input_tag.get('name')
+						if name is not None:
+							if any(name in input_tag.get('name') for name in post_data_names):
+								post_data.update({input_tag.get('name'):input_tag.get('value')})
+					r = amazon_session.post("https://www.amazon.de//gp/cart/view.html/ref=nav_cart", headers=user_agent, data=post_data)
+					return
 
 
 def main():
@@ -167,7 +190,8 @@ def main():
 	html, loggedInSession = search(query_list, loggedInSession)
 	foo, loggedInSession = req_product_page(loggedInSession, html, product_identifier)
 	loggedInSession = add_to_cart(foo, loggedInSession)
-	get_cart_page(loggedInSession)
+	html, loggedInSession = get_cart_page(loggedInSession)
+	delete_from_cart(html, loggedInSession)
 	# Buy Phase
 	# 	-> Login
 	# 	-> suche
