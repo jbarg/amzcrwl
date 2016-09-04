@@ -189,8 +189,7 @@ def main():
 	})
 	html, loggedInSession = search(query_list, loggedInSession)
 	foo, loggedInSession = req_product_page(loggedInSession, html, product_identifier)
-	#loggedInSession = add_to_cart(foo, loggedInSession)
-	#html, loggedInSession = get_cart_page(loggedInSession)
+	loggedInSession = add_to_cart(foo, loggedInSession)
 	html, loggedInSession = get_cart_page(loggedInSession)
 	delete_from_cart(html, loggedInSession)
 	# Buy Phase
